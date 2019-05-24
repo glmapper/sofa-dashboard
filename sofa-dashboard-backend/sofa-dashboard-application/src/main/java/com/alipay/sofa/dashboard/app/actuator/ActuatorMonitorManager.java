@@ -164,12 +164,13 @@ public class ActuatorMonitorManager implements MonitorManager {
             .getCacheDetailThreads();
         FixedQueue<DetailThreadInfo> detailThreadInfoFixedQueue = cacheDetailThreads
             .get(getAppId(source));
-        DetailThreadInfo detailThreadInfo = detailThreadInfoFixedQueue.poll();
-        while (detailThreadInfo != null) {
-            result.add(detailThreadInfo.getLive());
-            result.add(detailThreadInfo.getDaemon());
-            result.add(detailThreadInfo.getPeak());
-            detailThreadInfo = detailThreadInfoFixedQueue.poll();
+        if (detailThreadInfoFixedQueue != null ){
+            for (int i = 0 ;i < detailThreadInfoFixedQueue.size(); i++) {
+                DetailThreadInfo detailThreadInfo = detailThreadInfoFixedQueue.get(i);
+                result.add(detailThreadInfo.getLive());
+                result.add(detailThreadInfo.getDaemon());
+                result.add(detailThreadInfo.getPeak());
+            }
         }
         return result;
     }
@@ -180,11 +181,12 @@ public class ActuatorMonitorManager implements MonitorManager {
         Map<String, FixedQueue<MemoryHeapInfo>> cacheHeapMemory = DynamicActuatorDataCacheManager
             .getCacheHeapMemory();
         FixedQueue<MemoryHeapInfo> memoryHeapInfoFixedQueue = cacheHeapMemory.get(getAppId(source));
-        MemoryHeapInfo memoryHeapInfo = memoryHeapInfoFixedQueue.poll();
-        while (memoryHeapInfo != null) {
-            result.add(memoryHeapInfo.getSize());
-            result.add(memoryHeapInfo.getUsed());
-            memoryHeapInfo = memoryHeapInfoFixedQueue.poll();
+        if (memoryHeapInfoFixedQueue != null){
+            for (int i = 0 ;i < memoryHeapInfoFixedQueue.size(); i++) {
+                MemoryHeapInfo memoryHeapInfo = memoryHeapInfoFixedQueue.get(i);
+                result.add(memoryHeapInfo.getSize());
+                result.add(memoryHeapInfo.getUsed());
+            }
         }
         return result;
     }
@@ -196,12 +198,13 @@ public class ActuatorMonitorManager implements MonitorManager {
             .getCacheNonHeapMemory();
         FixedQueue<MemoryNonHeapInfo> nonHeapInfoFixedQueue = cacheNonHeapMemory
             .get(getAppId(source));
-        MemoryNonHeapInfo memoryNonHeapInfo = nonHeapInfoFixedQueue.poll();
-        while (memoryNonHeapInfo != null) {
-            result.add(memoryNonHeapInfo.getMetaspace());
-            result.add(memoryNonHeapInfo.getSize());
-            result.add(memoryNonHeapInfo.getUsed());
-            memoryNonHeapInfo = nonHeapInfoFixedQueue.poll();
+        if (nonHeapInfoFixedQueue != null){
+            for (int i = 0 ;i < nonHeapInfoFixedQueue.size(); i++) {
+                MemoryNonHeapInfo memoryNonHeapInfo = nonHeapInfoFixedQueue.get(i);
+                result.add(memoryNonHeapInfo.getMetaspace());
+                result.add(memoryNonHeapInfo.getSize());
+                result.add(memoryNonHeapInfo.getUsed());
+            }
         }
         return result;
     }
