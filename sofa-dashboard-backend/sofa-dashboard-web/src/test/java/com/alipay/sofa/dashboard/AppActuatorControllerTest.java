@@ -17,6 +17,7 @@
 package com.alipay.sofa.dashboard;
 
 import com.alipay.sofa.dashboard.app.actuator.ActuatorMonitorManager;
+import com.alipay.sofa.dashboard.app.cache.DynamicActuatorDataCacheManager;
 import com.alipay.sofa.dashboard.app.task.AppDynamicInfoTask;
 import com.alipay.sofa.dashboard.app.zookeeper.ZookeeperApplicationManager;
 import com.alipay.sofa.dashboard.controller.AppActuatorController;
@@ -91,12 +92,15 @@ public class AppActuatorControllerTest {
         FixedQueue<MemoryHeapInfo> queue1 = new FixedQueue(4);
         FixedQueue<MemoryNonHeapInfo> queue2 = new FixedQueue(4);
         FixedQueue<DetailThreadInfo> queue3 = new FixedQueue(4);
-        ActuatorMonitorManager.cacheHeapMemory.put(
-            DashboardUtil.simpleEncode("127.0.0.1", definedPort), queue1);
-        ActuatorMonitorManager.cacheNonHeapMemory.put(
-            DashboardUtil.simpleEncode("127.0.0.1", definedPort), queue2);
-        ActuatorMonitorManager.cacheDetailThreads.put(
-            DashboardUtil.simpleEncode("127.0.0.1", definedPort), queue3);
+        Map<String, FixedQueue<DetailThreadInfo>> cacheDetailThreads = DynamicActuatorDataCacheManager
+            .getCacheDetailThreads();
+        Map<String, FixedQueue<MemoryHeapInfo>> cacheHeapMemory = DynamicActuatorDataCacheManager
+            .getCacheHeapMemory();
+        Map<String, FixedQueue<MemoryNonHeapInfo>> cacheNonHeapMemory = DynamicActuatorDataCacheManager
+            .getCacheNonHeapMemory();
+        cacheHeapMemory.put(DashboardUtil.simpleEncode("127.0.0.1", definedPort), queue1);
+        cacheNonHeapMemory.put(DashboardUtil.simpleEncode("127.0.0.1", definedPort), queue2);
+        cacheDetailThreads.put(DashboardUtil.simpleEncode("127.0.0.1", definedPort), queue3);
 
         Application application = new Application();
         application.setHostName("localhost");

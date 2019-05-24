@@ -33,15 +33,16 @@ public class DashboardUtil {
      * 理论上 f 之后的英文字符均可，作为分隔符；不选择特殊字符原因在于，如何 # 等在作为请求参数时，会被浏览器处理为 location 的 hash 值
      * 另外对于考虑到生成的 code 码长度问题，仅使用一位字符
      */
-    public static final String            KEY        = "g";
+    public static final String  KEY           = "g";
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+    private static final String FORMAT_PATTEN = "HH:mm:ss";
 
     public static Date now() {
         return new Date(System.currentTimeMillis());
     }
 
     public static String getCurrentDataKey() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(FORMAT_PATTEN);
         return dateFormat.format(now());
     }
 

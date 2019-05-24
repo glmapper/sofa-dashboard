@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,9 +43,14 @@ public class AppActuatorController {
     @Autowired
     private MonitorManager monitorManager;
 
+    /**
+     * 返回应用基础信息
+     * @param id 应用实例id
+     * @return
+     */
     @RequestMapping("details")
-    public Map baseDetails(@RequestParam("id") String targetHost) {
-        String source = DashboardUtil.simpleDecode(targetHost);
+    public Map baseDetails(@RequestParam("id") String id) {
+        String source = DashboardUtil.simpleDecode(id);
         HealthInfo healthInfo = monitorManager.fetchHealth(source);
         Map map = monitorManager.fetchInfo(source);
         List<DetailsItem> threads = monitorManager.fetchDetailsThread(source);
@@ -61,36 +65,56 @@ public class AppActuatorController {
         return data;
     }
 
+    /**
+     * 返回应用 env 信息
+     * @param id 应用实例id
+     * @return
+     */
     @RequestMapping("env")
-    public Map env(@RequestParam("id") String targetHost) {
-        String source = DashboardUtil.simpleDecode(targetHost);
+    public Map env(@RequestParam("id") String id) {
+        String source = DashboardUtil.simpleDecode(id);
         EnvironmentInfo environmentInfo = monitorManager.fetchEnvironment(source);
         Map<String, Object> data = new HashMap<>();
         data.put("env", environmentInfo);
         return data;
     }
 
+    /**
+     * 返回应用 loggers 信息
+     * @param id 应用实例id
+     * @return
+     */
     @RequestMapping("loggers")
-    public Map loggers(@RequestParam("id") String targetHost) {
-        String source = DashboardUtil.simpleDecode(targetHost);
+    public Map loggers(@RequestParam("id") String id) {
+        String source = DashboardUtil.simpleDecode(id);
         LoggersInfo loggersInfo = monitorManager.fetchLoggers(source);
         Map<String, Object> data = new HashMap<>();
         data.put("loggers", loggersInfo);
         return data;
     }
 
+    /**
+     * 返回 mappings 信息
+     * @param id 应用实例id
+     * @return
+     */
     @RequestMapping("mappings")
-    public Map mappings(@RequestParam("id") String targetHost) {
-        String source = DashboardUtil.simpleDecode(targetHost);
+    public Map mappings(@RequestParam("id") String id) {
+        String source = DashboardUtil.simpleDecode(id);
         Map<String, MappingsInfo> mappingsInfoMap = monitorManager.fetchMappings(source);
         Map<String, Object> data = new HashMap<>();
         data.put("mappings", mappingsInfoMap);
         return data;
     }
 
+    /**
+     * 返回 thread-dump 信息
+     * @param id 应用实例id
+     * @return
+     */
     @RequestMapping("thread-dump")
-    public Map threadDump(@RequestParam("id") String targetHost) {
-        String source = DashboardUtil.simpleDecode(targetHost);
+    public Map threadDump(@RequestParam("id") String id) {
+        String source = DashboardUtil.simpleDecode(id);
         List<ThreadDumpInfo> threadDumps = monitorManager.fetchThreadDump(source);
         Map<String, Object> data = new HashMap<>();
         data.put("threaddump", threadDumps);

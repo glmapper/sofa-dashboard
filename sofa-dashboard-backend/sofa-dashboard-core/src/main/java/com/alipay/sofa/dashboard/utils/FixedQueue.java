@@ -45,6 +45,10 @@ public class FixedQueue<E> {
         queue.offer(e);
     }
 
+    public E poll() {
+        return queue.poll();
+    }
+
     public E get(int position) {
         return queue.get(position);
     }
@@ -55,9 +59,5 @@ public class FixedQueue<E> {
 
     public int size() {
         return queue.size();
-    }
-
-    public LinkedList<E> getQueue() {
-        return queue;
     }
 }

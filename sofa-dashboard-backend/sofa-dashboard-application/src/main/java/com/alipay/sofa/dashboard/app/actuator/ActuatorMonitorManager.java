@@ -16,6 +16,7 @@
  */
 package com.alipay.sofa.dashboard.app.actuator;
 
+import com.alipay.sofa.dashboard.app.cache.DynamicActuatorDataCacheManager;
 import com.alipay.sofa.dashboard.constants.SofaDashboardConstants;
 import com.alipay.sofa.dashboard.enums.ActuatorPathEnum;
 import com.alipay.sofa.dashboard.model.monitor.DetailThreadInfo;
@@ -31,6 +32,7 @@ import com.alipay.sofa.dashboard.model.monitor.ThreadDumpInfo;
 import com.alipay.sofa.dashboard.spi.MonitorManager;
 import com.alipay.sofa.dashboard.utils.DashboardUtil;
 import com.alipay.sofa.dashboard.utils.FixedQueue;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
@@ -53,17 +55,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class ActuatorMonitorManager implements MonitorManager {
 
-    private RestTemplate                                     restTemplate       = new RestTemplate();
-
-    public static Map<String, FixedQueue<DetailThreadInfo>>  cacheDetailThreads = new ConcurrentHashMap<>();
-
-    public static Map<String, FixedQueue<MemoryHeapInfo>>    cacheHeapMemory    = new ConcurrentHashMap<>();
-
-    public static Map<String, FixedQueue<MemoryNonHeapInfo>> cacheNonHeapMemory = new ConcurrentHashMap<>();
+    @Autowired
+    RestTemplateClient restTemplateClient;
 
     @Override
     public EnvironmentInfo fetchEnvironment(Object source) {
-        Map envMap = doRequest(source, ActuatorPathEnum.ENV.getPath(), restTemplate);
+        Map envMap = restTemplateClient.doRequest(source, ActuatorPathEnum.ENV.getPath());
         EnvironmentInfo environmentInfo = new EnvironmentInfo();
         if (envMap.isEmpty()) {
             return environmentInfo;
@@ -116,7 +113,7 @@ public class ActuatorMonitorManager implements MonitorManager {
 
     @Override
     public HealthInfo fetchHealth(Object source) {
-        Map healthMap = doRequest(source, ActuatorPathEnum.HEALTH.getPath(), restTemplate);
+        Map healthMap = restTemplateClient.doRequest(source, ActuatorPathEnum.HEALTH.getPath());
         HealthInfo healthInfo = new HealthInfo();
         if (healthMap.isEmpty()) {
             return healthInfo;
@@ -135,7 +132,7 @@ public class ActuatorMonitorManager implements MonitorManager {
                 if (healthItemObj instanceof Map) {
                     Map<String, Object> healthItemMap = (Map<String, Object>) healthItemObj;
                     Object statusObj = healthItemMap.get("status");
-                    healthItemInfo.setStatus(StringUtils.isEmpty(statusObj) ? "" : (String) statusObj);
+                    healthItemInfo.setStatus(StringUtils.isEmpty(statusObj) ? SofaDashboardConstants.EMPTY : (String) statusObj);
                     Object healthItemDetails = healthItemMap.get("details");
                     if (healthItemDetails instanceof Map) {
                         healthItemInfo.setDetails((Map<String, Object>) healthItemDetails);
@@ -151,7 +148,7 @@ public class ActuatorMonitorManager implements MonitorManager {
     @Override
     public Map fetchInfo(Object source) {
         Map<String, String> data = new LinkedHashMap<>();
-        Map infoMap = doRequest(source, ActuatorPathEnum.INFO.getPath(), restTemplate);
+        Map infoMap = restTemplateClient.doRequest(source, ActuatorPathEnum.INFO.getPath());
         if (infoMap.isEmpty()) {
             return data;
         }
@@ -162,43 +159,57 @@ public class ActuatorMonitorManager implements MonitorManager {
 
     @Override
     public List<DetailsItem> fetchDetailsThread(Object source) {
-        List<DetailThreadInfo> data = cacheDetailThreads.get(getAppId(source)).getQueue();
         List<DetailsItem> result = new ArrayList<>();
-        data.forEach((item) -> {
-            result.add(item.getLive());
-            result.add(item.getDaemon());
-            result.add(item.getPeak());
-        });
+        Map<String, FixedQueue<DetailThreadInfo>> cacheDetailThreads = DynamicActuatorDataCacheManager
+            .getCacheDetailThreads();
+        FixedQueue<DetailThreadInfo> detailThreadInfoFixedQueue = cacheDetailThreads
+            .get(getAppId(source));
+        DetailThreadInfo detailThreadInfo = detailThreadInfoFixedQueue.poll();
+        while (detailThreadInfo != null) {
+            result.add(detailThreadInfo.getLive());
+            result.add(detailThreadInfo.getDaemon());
+            result.add(detailThreadInfo.getPeak());
+            detailThreadInfo = detailThreadInfoFixedQueue.poll();
+        }
         return result;
     }
 
     @Override
     public List<DetailsItem> fetchHeapMemory(Object source) {
-        LinkedList<MemoryHeapInfo> data = cacheHeapMemory.get(getAppId(source)).getQueue();
         List<DetailsItem> result = new ArrayList<>();
-        data.forEach((item) -> {
-            result.add(item.getSize());
-            result.add(item.getUsed());
-        });
+        Map<String, FixedQueue<MemoryHeapInfo>> cacheHeapMemory = DynamicActuatorDataCacheManager
+            .getCacheHeapMemory();
+        FixedQueue<MemoryHeapInfo> memoryHeapInfoFixedQueue = cacheHeapMemory.get(getAppId(source));
+        MemoryHeapInfo memoryHeapInfo = memoryHeapInfoFixedQueue.poll();
+        while (memoryHeapInfo != null) {
+            result.add(memoryHeapInfo.getSize());
+            result.add(memoryHeapInfo.getUsed());
+            memoryHeapInfo = memoryHeapInfoFixedQueue.poll();
+        }
         return result;
     }
 
     @Override
     public List<DetailsItem> fetchNonHeapMemory(Object source) {
-        LinkedList<MemoryNonHeapInfo> data = cacheNonHeapMemory.get(getAppId(source)).getQueue();
         List<DetailsItem> result = new ArrayList<>();
-        data.forEach((item) -> {
-            result.add(item.getMetaspace());
-            result.add(item.getSize());
-            result.add(item.getUsed());
-        });
+        Map<String, FixedQueue<MemoryNonHeapInfo>> cacheNonHeapMemory = DynamicActuatorDataCacheManager
+            .getCacheNonHeapMemory();
+        FixedQueue<MemoryNonHeapInfo> nonHeapInfoFixedQueue = cacheNonHeapMemory
+            .get(getAppId(source));
+        MemoryNonHeapInfo memoryNonHeapInfo = nonHeapInfoFixedQueue.poll();
+        while (memoryNonHeapInfo != null) {
+            result.add(memoryNonHeapInfo.getMetaspace());
+            result.add(memoryNonHeapInfo.getSize());
+            result.add(memoryNonHeapInfo.getUsed());
+            memoryNonHeapInfo = nonHeapInfoFixedQueue.poll();
+        }
         return result;
     }
 
     @Override
     public LoggersInfo fetchLoggers(Object source) {
         LoggersInfo loggersInfo = new LoggersInfo();
-        Map queryData = doRequest(source, ActuatorPathEnum.LOGGERS.getPath(), restTemplate);
+        Map queryData = restTemplateClient.doRequest(source, ActuatorPathEnum.LOGGERS.getPath());
         if (queryData.isEmpty()) {
             return loggersInfo;
         }
@@ -228,7 +239,7 @@ public class ActuatorMonitorManager implements MonitorManager {
     @Override
     public Map<String, MappingsInfo> fetchMappings(Object source) {
         Map<String, MappingsInfo> result = new LinkedHashMap<>();
-        Map queryData = doRequest(source, ActuatorPathEnum.MAPPINGS.getPath(), restTemplate);
+        Map queryData = restTemplateClient.doRequest(source, ActuatorPathEnum.MAPPINGS.getPath());
         if (queryData.isEmpty()) {
             return result;
         }
@@ -262,7 +273,7 @@ public class ActuatorMonitorManager implements MonitorManager {
     @Override
     public List<ThreadDumpInfo> fetchThreadDump(Object source) {
         List<ThreadDumpInfo> result = new ArrayList<>();
-        Map queryData = doRequest(source, ActuatorPathEnum.THREADDUMP.getPath(), restTemplate);
+        Map queryData = restTemplateClient.doRequest(source, ActuatorPathEnum.THREADDUMP.getPath());
         if (queryData.isEmpty()) {
             return result;
         }
@@ -305,10 +316,10 @@ public class ActuatorMonitorManager implements MonitorManager {
                         if (dispatcherServlet instanceof Map) {
                             Map dispatcherServletMap = (Map) dispatcherServlet;
                             String handler = DashboardUtil.getEmptyStringIfNull(dispatcherServletMap, "handler");
-                            String predicate = "";
-                            String methods = "";
-                            String paramsType = "";
-                            String responseType = "";
+                            String predicate = SofaDashboardConstants.EMPTY;
+                            String methods = SofaDashboardConstants.EMPTY;
+                            String paramsType = SofaDashboardConstants.EMPTY;
+                            String responseType = SofaDashboardConstants.EMPTY;
                             Object detailsObj = dispatcherServletMap.get("details");
                             if (detailsObj instanceof Map && ((Map) detailsObj).containsKey("handlerMethod")) {
                                 Object handlerMethodObj = ((Map) detailsObj).get("handlerMethod");
@@ -426,27 +437,6 @@ public class ActuatorMonitorManager implements MonitorManager {
         } else {
             data.put(finalKey, String.valueOf(obj));
         }
-    }
-
-    public static Map doRequest(Object source, String path, RestTemplate restTemplate) {
-        Map result;
-        String targetRequest = buildTargetRestRequest(source, path);
-        if (StringUtils.isEmpty(targetRequest)) {
-            result = new HashMap();
-        } else {
-            result = restTemplate.getForObject(targetRequest, Map.class);
-            if (result == null) {
-                result = new HashMap();
-            }
-        }
-        return result;
-    }
-
-    private static String buildTargetRestRequest(Object source, String path) {
-        if (source == null) {
-            return null;
-        }
-        return SofaDashboardConstants.HTTP_SCHEME + String.valueOf(source) + path;
     }
 
     private String getAppId(Object source) {

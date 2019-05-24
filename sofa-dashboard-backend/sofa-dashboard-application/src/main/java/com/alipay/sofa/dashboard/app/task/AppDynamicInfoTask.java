@@ -17,6 +17,8 @@
 package com.alipay.sofa.dashboard.app.task;
 
 import com.alipay.sofa.dashboard.app.actuator.ActuatorMonitorManager;
+import com.alipay.sofa.dashboard.app.actuator.RestTemplateClient;
+import com.alipay.sofa.dashboard.app.cache.DynamicActuatorDataCacheManager;
 import com.alipay.sofa.dashboard.app.zookeeper.ZookeeperApplicationManager;
 import com.alipay.sofa.dashboard.constants.SofaDashboardConstants;
 import com.alipay.sofa.dashboard.model.Application;
@@ -29,8 +31,6 @@ import com.alipay.sofa.dashboard.utils.FixedQueue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,7 +47,8 @@ public class AppDynamicInfoTask {
     @Autowired
     private ZookeeperApplicationManager zookeeperApplicationManager;
 
-    private RestTemplate                restTemplate = new RestTemplate();
+    @Autowired
+    private RestTemplateClient          restTemplateClient;
 
     @Scheduled(fixedRate = 15000)
     public void fetchAppDynamicInfo() {
@@ -70,18 +71,19 @@ public class AppDynamicInfoTask {
      * @param time
      */
     private void doCalculateThreads(Application app, String time) {
-        Map threadsLiveMap = ActuatorMonitorManager.doRequest(
+        Map threadsLiveMap = restTemplateClient.doRequest(
             app.getHostName() + SofaDashboardConstants.COLON + app.getPort(),
-            "/actuator/metrics/jvm.threads.live", restTemplate);
-        Map threadsDaemonMap = ActuatorMonitorManager.doRequest(app.getHostName()
-                                                                + SofaDashboardConstants.COLON
-                                                                + app.getPort(),
-            "/actuator/metrics/jvm.threads.daemon", restTemplate);
-        Map threadsPeakMap = ActuatorMonitorManager.doRequest(
+            "/actuator/metrics/jvm.threads.live");
+        Map threadsDaemonMap = restTemplateClient.doRequest(
             app.getHostName() + SofaDashboardConstants.COLON + app.getPort(),
-            "/actuator/metrics/jvm.threads.peak", restTemplate);
+            "/actuator/metrics/jvm.threads.daemon");
+        Map threadsPeakMap = restTemplateClient.doRequest(
+            app.getHostName() + SofaDashboardConstants.COLON + app.getPort(),
+            "/actuator/metrics/jvm.threads.peak");
         String appId = DashboardUtil.simpleEncode(app.getHostName(), app.getPort());
-        FixedQueue<DetailThreadInfo> queue = ActuatorMonitorManager.cacheDetailThreads.get(appId);
+        Map<String, FixedQueue<DetailThreadInfo>> cacheDetailThreads = DynamicActuatorDataCacheManager
+            .getCacheDetailThreads();
+        FixedQueue<DetailThreadInfo> queue = cacheDetailThreads.get(appId);
         if (queue == null) {
             queue = new FixedQueue<>(4);
         }
@@ -108,7 +110,7 @@ public class AppDynamicInfoTask {
         threadInfo.setDaemon(daemon);
         queue.offer(threadInfo);
 
-        ActuatorMonitorManager.cacheDetailThreads.put(appId, queue);
+        cacheDetailThreads.put(appId, queue);
 
     }
 
@@ -136,17 +138,19 @@ public class AppDynamicInfoTask {
      */
     private void doCalculateMemoryHeap(Application app, String time) {
         String appId = DashboardUtil.simpleEncode(app.getHostName(), app.getPort());
-        FixedQueue<MemoryHeapInfo> queue = ActuatorMonitorManager.cacheHeapMemory.get(appId);
+        Map<String, FixedQueue<MemoryHeapInfo>> cacheHeapMemory = DynamicActuatorDataCacheManager
+            .getCacheHeapMemory();
+        FixedQueue<MemoryHeapInfo> queue = cacheHeapMemory.get(appId);
         if (queue == null) {
             queue = new FixedQueue<>(4);
         }
-        Map committedMap = ActuatorMonitorManager.doRequest(
+        Map committedMap = restTemplateClient.doRequest(
             app.getHostName() + SofaDashboardConstants.COLON + app.getPort(),
-            "/actuator/metrics/jvm.memory.committed?tag=area:heap", restTemplate);
+            "/actuator/metrics/jvm.memory.committed?tag=area:heap");
         Number committed = parseMeasurements(committedMap);
-        Map usedMap = ActuatorMonitorManager.doRequest(
-            app.getHostName() + SofaDashboardConstants.COLON + app.getPort(),
-            "/actuator/metrics/jvm.memory.used?tag=area:heap", restTemplate);
+        Map usedMap = restTemplateClient.doRequest(app.getHostName() + SofaDashboardConstants.COLON
+                                                   + app.getPort(),
+            "/actuator/metrics/jvm.memory.used?tag=area:heap");
         Number usedNum = parseMeasurements(usedMap);
 
         DetailsItem used = new DetailsItem();
@@ -163,7 +167,7 @@ public class AppDynamicInfoTask {
         heap.setSize(size);
         heap.setUsed(used);
         queue.offer(heap);
-        ActuatorMonitorManager.cacheHeapMemory.put(appId, queue);
+        cacheHeapMemory.put(appId, queue);
     }
 
     /**
@@ -173,23 +177,25 @@ public class AppDynamicInfoTask {
      */
     private void doCalculateMemoryNonHeap(Application app, String time) {
         String appId = DashboardUtil.simpleEncode(app.getHostName(), app.getPort());
-        FixedQueue<MemoryNonHeapInfo> queue = ActuatorMonitorManager.cacheNonHeapMemory.get(appId);
+        Map<String, FixedQueue<MemoryNonHeapInfo>> cacheNonHeapMemory = DynamicActuatorDataCacheManager
+            .getCacheNonHeapMemory();
+        FixedQueue<MemoryNonHeapInfo> queue = cacheNonHeapMemory.get(appId);
 
         if (queue == null) {
             queue = new FixedQueue<>(4);
         }
 
-        Map committedMap = ActuatorMonitorManager.doRequest(
+        Map committedMap = restTemplateClient.doRequest(
             app.getHostName() + SofaDashboardConstants.COLON + app.getPort(),
-            "/actuator/metrics/jvm.memory.committed?tag=area:nonheap", restTemplate);
+            "/actuator/metrics/jvm.memory.committed?tag=area:nonheap");
         Number committed = parseMeasurements(committedMap);
-        Map usedMap = ActuatorMonitorManager.doRequest(
-            app.getHostName() + SofaDashboardConstants.COLON + app.getPort(),
-            "/actuator/metrics/jvm.memory.used?tag=area:nonheap", restTemplate);
+        Map usedMap = restTemplateClient.doRequest(app.getHostName() + SofaDashboardConstants.COLON
+                                                   + app.getPort(),
+            "/actuator/metrics/jvm.memory.used?tag=area:nonheap");
         Number usedNum = parseMeasurements(usedMap);
-        Map metaspaceMap = ActuatorMonitorManager.doRequest(
+        Map metaspaceMap = restTemplateClient.doRequest(
             app.getHostName() + SofaDashboardConstants.COLON + app.getPort(),
-            "/actuator/metrics/jvm.memory.used?tag=area:nonheap&tag=id:Metaspace", restTemplate);
+            "/actuator/metrics/jvm.memory.used?tag=area:nonheap&tag=id:Metaspace");
         Number metaspaceNum = parseMeasurements(metaspaceMap);
 
         DetailsItem used = new DetailsItem();
@@ -212,6 +218,6 @@ public class AppDynamicInfoTask {
         nonHeap.setSize(size);
         nonHeap.setUsed(used);
         queue.offer(nonHeap);
-        ActuatorMonitorManager.cacheNonHeapMemory.put(appId, queue);
+        cacheNonHeapMemory.put(appId, queue);
     }
 }

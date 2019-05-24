@@ -261,7 +261,7 @@ public class ZookeeperApplicationManager implements ApplicationManager, Initiali
                             && item.containsKey(SofaDashboardConstants.BIZ_VERSION)) {
                             if (pluginName.equals(item.get(SofaDashboardConstants.BIZ_NAME))
                                 && version.equals(item.get(SofaDashboardConstants.BIZ_VERSION))) {
-                                return item.get(SofaDashboardConstants.BIZ_STATE) == null ? ""
+                                return item.get(SofaDashboardConstants.BIZ_STATE) == null ? SofaDashboardConstants.EMPTY
                                     : item.get(SofaDashboardConstants.BIZ_STATE).toString();
                             }
                         }
@@ -269,7 +269,7 @@ public class ZookeeperApplicationManager implements ApplicationManager, Initiali
                 }
             }
         }
-        return "";
+        return SofaDashboardConstants.EMPTY;
     }
 
     private String getBizStateUrl(Application instance) {
