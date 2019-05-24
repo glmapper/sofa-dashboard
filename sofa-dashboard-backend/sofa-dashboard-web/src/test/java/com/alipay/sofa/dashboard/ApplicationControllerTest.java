@@ -16,7 +16,7 @@
  */
 package com.alipay.sofa.dashboard;
 
-import com.alipay.sofa.dashboard.application.ZookeeperApplicationManager;
+import com.alipay.sofa.dashboard.app.zookeeper.ZookeeperApplicationManager;
 import com.alipay.sofa.dashboard.base.AbstractTestBase;
 import com.alipay.sofa.dashboard.model.Application;
 import com.alipay.sofa.dashboard.utils.ObjectBytesUtil;
@@ -42,10 +42,14 @@ import java.lang.reflect.Method;
 public class ApplicationControllerTest extends AbstractTestBase {
 
     @Autowired
-    ZkCommandClient zkCommandClient;
+    ZkCommandClient                     zkCommandClient;
+
+    @Autowired
+    private ZookeeperApplicationManager zookeeperApplicationManager;
 
     @Before
     public void before() throws Exception {
+        zookeeperApplicationManager.getApplications().clear();
         restTemplate = new RestTemplate();
         // 初始化 zk 节点
         client = CuratorFrameworkFactory.newClient("localhost:2181", new ExponentialBackoffRetry(
@@ -54,7 +58,7 @@ public class ApplicationControllerTest extends AbstractTestBase {
         initAppData();
         // 反射调用，强制获取一次数据
         Class classObj = Class
-            .forName("com.alipay.sofa.dashboard.application.ZookeeperApplicationManager");
+            .forName("com.alipay.sofa.dashboard.app.zookeeper.ZookeeperApplicationManager");
         ZookeeperApplicationManager zookeeperApplicationManager = (ZookeeperApplicationManager) classObj
             .newInstance();
         Method method = classObj.getDeclaredMethod("initApplications");

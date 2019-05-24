@@ -14,21 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alipay.sofa.dashboard;
+package com.alipay.sofa.dashboard.model.monitor;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import java.util.List;
+import java.util.Map;
 
 /**
- * @author: guolei.sgl (guolei.sgl@antfin.com) 19/1/10 下午9:36
+ * values:
+ * heap:123
+ * non-heap:234
+ *
+ * @author: guolei.sgl (guolei.sgl@antfin.com) 2019/5/7 9:29 PM
  * @since:
  **/
-@SpringBootApplication
-@EnableScheduling
-public class SofaAdminServerApplication {
+public class AvailableTagInfo {
 
-    public static void main(String[] args) {
-        SpringApplication.run(SofaAdminServerApplication.class, args);
+    private String                    tag;
+
+    private List<Map<String, String>> values;
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public List<Map<String, String>> getValues() {
+        return values;
+    }
+
+    public void setValues(List<Map<String, String>> values) {
+        this.values = values;
     }
 }

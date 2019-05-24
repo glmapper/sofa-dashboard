@@ -16,19 +16,22 @@
  */
 package com.alipay.sofa.dashboard;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import com.alipay.sofa.dashboard.utils.DashboardUtil;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * @author: guolei.sgl (guolei.sgl@antfin.com) 19/1/10 下午9:36
+ * @author: guolei.sgl (guolei.sgl@antfin.com) 2019/5/13 7:44 PM
  * @since:
  **/
-@SpringBootApplication
-@EnableScheduling
-public class SofaAdminServerApplication {
+public class DashboardUtilTest {
 
-    public static void main(String[] args) {
-        SpringApplication.run(SofaAdminServerApplication.class, args);
+    @Test
+    public void testEncode() {
+        String encode = DashboardUtil.simpleEncode("127.0.0.1", 8080);
+        String encodeLocal = DashboardUtil.simpleEncode("localhost", 8080);
+        Assert.assertTrue(encodeLocal.equals(encode));
+        String result = DashboardUtil.simpleDecode(encode);
+        Assert.assertTrue(result.equals("127.0.0.1:8080"));
     }
 }

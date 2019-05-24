@@ -16,6 +16,7 @@
         <module>sofa-dashboard-web</module>
         <module>sofa-dashboard-arkmng</module>
         <module>sofa-dashboard-governance</module>
+        <module>sofa-dashboard-application</module>
     </modules>
 
     <properties>
@@ -47,6 +48,12 @@
             <dependency>
                 <groupId>com.alipay.sofa</groupId>
                 <artifactId>sofa-dashboard-governance</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alipay.sofa</groupId>
+                <artifactId>sofa-dashboard-application</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -187,9 +194,13 @@
                         </goals>
                     </execution>
                 </executions>
+
                 <configuration>
                     <configFile>${main.user.dir}/tools/codestyle/formatter.xml</configFile>
                     <encoding>UTF-8</encoding>
+                    <excludes>
+                        <exclude>**/*Enum.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -203,6 +214,10 @@
                 <version>0.7.9</version>
                 <configuration>
                     <skip>false</skip>
+                    <excludes>
+                        <exclude>**/*Enum.java</exclude>
+                        <exclude>**/model/*.java</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>

@@ -14,21 +14,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alipay.sofa.dashboard;
+package com.alipay.sofa.dashboard.utils;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import java.util.LinkedList;
 
 /**
- * @author: guolei.sgl (guolei.sgl@antfin.com) 19/1/10 下午9:36
+ * @author: guolei.sgl (guolei.sgl@antfin.com) 2019/5/9 5:19 PM
  * @since:
  **/
-@SpringBootApplication
-@EnableScheduling
-public class SofaAdminServerApplication {
+public class FixedQueue<E> {
 
-    public static void main(String[] args) {
-        SpringApplication.run(SofaAdminServerApplication.class, args);
+    /**
+     * 固定长度
+     */
+    private final int     size;
+
+    private LinkedList<E> queue = new LinkedList<>();
+
+    public FixedQueue(int size) {
+        this.size = size;
+    }
+
+    /**
+     * 入列：当队列大小已满时，把队头的元素poll掉
+     */
+    public void offer(E e) {
+        if (queue.size() >= size) {
+            queue.poll();
+        }
+        queue.offer(e);
+    }
+
+    public E poll() {
+        return queue.poll();
+    }
+
+    public E get(int position) {
+        return queue.get(position);
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public int size() {
+        return queue.size();
     }
 }

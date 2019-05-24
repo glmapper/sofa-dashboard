@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alipay.sofa.dashboard.application;
+package com.alipay.sofa.dashboard.app.zookeeper;
 
 import com.alipay.sofa.dashboard.constants.SofaDashboardConstants;
 import com.alipay.sofa.dashboard.model.AppModel;
@@ -42,6 +42,19 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ *
+ * 基于 Zookeeper 的应用管理器，Dashboard 会监控 Zookeeper apps 目录下的节点，其结构如下：
+ *
+ * -apps
+ *  -instances
+ *   -appName1
+ *     -ip1
+ *     -ip2
+*    -appName2
+ *     -ip3
+ *
+ * ZookeeperApplicationManager 会缓存一份应用数据在内存中，key 为当前应用名，value 为实例信息
+ *
  * @author: guolei.sgl (guolei.sgl@antfin.com) 2019/2/18 2:21 PM
  * @since:
  **/
@@ -50,8 +63,6 @@ public class ZookeeperApplicationManager implements ApplicationManager, Initiali
 
     private static final Logger                  LOGGER       = LoggerFactory
                                                                   .getLogger(ZookeeperApplicationManager.class);
-    private static final String                  LOCALHOST_IP = "127.0.0.1";
-
     @Autowired
     private ZkCommandClient                      zkCommandClient;
 
@@ -223,7 +234,8 @@ public class ZookeeperApplicationManager implements ApplicationManager, Initiali
             Set<Application> instances = applications.get(appName);
             for (Application instance : instances) {
                 // 兼容 "127.0.0.1" 和 真实地址，主要是本地环境下
-                if (LOCALHOST_IP.equals(ip) || instance.getHostName().equals(ip)) {
+                if (SofaDashboardConstants.LOCALHOST_IP.equals(ip)
+                    || instance.getHostName().equals(ip)) {
                     Map result = restTemplate.getForObject(getBizStateUrl(instance), Map.class);
                     return parseStateFromMapJSON(result, pluginName, version);
                 }
@@ -249,7 +261,7 @@ public class ZookeeperApplicationManager implements ApplicationManager, Initiali
                             && item.containsKey(SofaDashboardConstants.BIZ_VERSION)) {
                             if (pluginName.equals(item.get(SofaDashboardConstants.BIZ_NAME))
                                 && version.equals(item.get(SofaDashboardConstants.BIZ_VERSION))) {
-                                return item.get(SofaDashboardConstants.BIZ_STATE) == null ? ""
+                                return item.get(SofaDashboardConstants.BIZ_STATE) == null ? SofaDashboardConstants.EMPTY
                                     : item.get(SofaDashboardConstants.BIZ_STATE).toString();
                             }
                         }
@@ -257,7 +269,7 @@ public class ZookeeperApplicationManager implements ApplicationManager, Initiali
                 }
             }
         }
-        return "";
+        return SofaDashboardConstants.EMPTY;
     }
 
     private String getBizStateUrl(Application instance) {
