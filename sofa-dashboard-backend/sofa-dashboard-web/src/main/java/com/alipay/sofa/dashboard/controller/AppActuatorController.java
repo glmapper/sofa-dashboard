@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,7 @@ public class AppActuatorController {
 
     /**
      * 返回应用基础信息
+     *
      * @param id 应用实例id
      * @return
      */
@@ -67,6 +69,7 @@ public class AppActuatorController {
 
     /**
      * 返回应用 env 信息
+     *
      * @param id 应用实例id
      * @return
      */
@@ -81,6 +84,7 @@ public class AppActuatorController {
 
     /**
      * 返回应用 loggers 信息
+     *
      * @param id 应用实例id
      * @return
      */
@@ -95,6 +99,7 @@ public class AppActuatorController {
 
     /**
      * 返回 mappings 信息
+     *
      * @param id 应用实例id
      * @return
      */
@@ -109,6 +114,7 @@ public class AppActuatorController {
 
     /**
      * 返回 thread-dump 信息
+     *
      * @param id 应用实例id
      * @return
      */

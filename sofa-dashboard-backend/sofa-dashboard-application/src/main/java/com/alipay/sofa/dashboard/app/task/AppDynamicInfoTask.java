@@ -31,6 +31,7 @@ import com.alipay.sofa.dashboard.utils.FixedQueue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,6 +68,7 @@ public class AppDynamicInfoTask {
 
     /**
      * 获取线程状态数据
+     *
      * @param app
      * @param time
      */
@@ -133,6 +135,7 @@ public class AppDynamicInfoTask {
 
     /**
      * 获取堆内存数据
+     *
      * @param app
      * @param time
      */
@@ -172,6 +175,7 @@ public class AppDynamicInfoTask {
 
     /**
      * 获取非堆区数据
+     *
      * @param app
      * @param time
      */
