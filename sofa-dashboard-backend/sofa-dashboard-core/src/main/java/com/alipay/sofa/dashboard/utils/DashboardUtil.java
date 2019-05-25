@@ -18,6 +18,7 @@ package com.alipay.sofa.dashboard.utils;
 
 import com.alipay.sofa.dashboard.constants.SofaDashboardConstants;
 import org.springframework.util.StringUtils;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -89,7 +90,6 @@ public class DashboardUtil {
     }
 
     /**
-     *
      * 出于安全考虑，ip:port 不适用直接暴露到浏览器地址中作为参数存在，因此对 ip+port 进行一次编码，
      * 产生一个唯一的序列号，应用实例的 ip 和 port 可以唯一确定当前应用实例。
      *

@@ -35,16 +35,13 @@ import com.alipay.sofa.dashboard.utils.FixedQueue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 应用监控管理器，基于 Spring Boot Actuator 实现
@@ -164,8 +161,8 @@ public class ActuatorMonitorManager implements MonitorManager {
             .getCacheDetailThreads();
         FixedQueue<DetailThreadInfo> detailThreadInfoFixedQueue = cacheDetailThreads
             .get(getAppId(source));
-        if (detailThreadInfoFixedQueue != null ){
-            for (int i = 0 ;i < detailThreadInfoFixedQueue.size(); i++) {
+        if (detailThreadInfoFixedQueue != null) {
+            for (int i = 0; i < detailThreadInfoFixedQueue.size(); i++) {
                 DetailThreadInfo detailThreadInfo = detailThreadInfoFixedQueue.get(i);
                 result.add(detailThreadInfo.getLive());
                 result.add(detailThreadInfo.getDaemon());
@@ -181,8 +178,8 @@ public class ActuatorMonitorManager implements MonitorManager {
         Map<String, FixedQueue<MemoryHeapInfo>> cacheHeapMemory = DynamicActuatorDataCacheManager
             .getCacheHeapMemory();
         FixedQueue<MemoryHeapInfo> memoryHeapInfoFixedQueue = cacheHeapMemory.get(getAppId(source));
-        if (memoryHeapInfoFixedQueue != null){
-            for (int i = 0 ;i < memoryHeapInfoFixedQueue.size(); i++) {
+        if (memoryHeapInfoFixedQueue != null) {
+            for (int i = 0; i < memoryHeapInfoFixedQueue.size(); i++) {
                 MemoryHeapInfo memoryHeapInfo = memoryHeapInfoFixedQueue.get(i);
                 result.add(memoryHeapInfo.getSize());
                 result.add(memoryHeapInfo.getUsed());
@@ -198,8 +195,8 @@ public class ActuatorMonitorManager implements MonitorManager {
             .getCacheNonHeapMemory();
         FixedQueue<MemoryNonHeapInfo> nonHeapInfoFixedQueue = cacheNonHeapMemory
             .get(getAppId(source));
-        if (nonHeapInfoFixedQueue != null){
-            for (int i = 0 ;i < nonHeapInfoFixedQueue.size(); i++) {
+        if (nonHeapInfoFixedQueue != null) {
+            for (int i = 0; i < nonHeapInfoFixedQueue.size(); i++) {
                 MemoryNonHeapInfo memoryNonHeapInfo = nonHeapInfoFixedQueue.get(i);
                 result.add(memoryNonHeapInfo.getMetaspace());
                 result.add(memoryNonHeapInfo.getSize());
