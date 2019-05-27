@@ -43,45 +43,71 @@ class Apppluginmng extends PureComponent {
         key: 'operation',
         render: item => (
           <span className="table-operation">
+            {
+              console.log("item",item)
+            }
             {item.statue === '' ? (
-              <a
-                onClick={e => {
-                  e.preventDefault();
-                  this.handleSingle(item, record.appName, 'install');
-                }}
-              >
-                安装
-              </a>
+              <div>
+                <a
+                  onClick={e => {
+                    e.preventDefault();
+                    this.handleSingle(item, record.appName, 'install');
+                  }}
+                >
+                  安装
+                </a>
+                <Divider type="vertical" /> 
+                <a style = {{"opacity":0.2,"pointerEvents":'none'}} > 激活 </a>
+                <Divider type="vertical" /> 
+                <a style = {{"opacity":0.2,"pointerEvents":'none'}} > 卸载 </a>
+              </div>
             ) : (
               ''
             )}
-            <Divider type="vertical" />
             {item.statue === 'DEACTIVATED' ? (
-              <a
-                onClick={e => {
-                  e.preventDefault();
-                  this.handleSingle(item, record.appName, 'switch');
-                }}
-              >
-                激活
-              </a>
+              <div>
+                 <a style = {{"opacity":0.2,"pointerEvents":'none'}} > 安装 </a>
+                 <Divider type="vertical" /> 
+                  <a
+                    onClick={e => {
+                      e.preventDefault();
+                      this.handleSingle(item, record.appName, 'switch');
+                    }}
+                  >
+                    激活
+                  </a>
+                  <Divider type="vertical" /> 
+                  <a style = {{"opacity":0.2,"pointerEvents":'none'}} > 卸载 </a>
+                  </div>
             ) : (
               ''
             )}
-            <Divider type="vertical" />
             {item.statue === 'ACTIVATED' ? (
-              <a
-                onClick={e => {
-                  e.preventDefault();
-                  this.handleSingle(item, record.appName, 'unstall');
-                }}
-              >
-                卸载
-              </a>
+              <div>
+                  <a style = {{"opacity":0.2,"pointerEvents":'none'}} > 安装 </a>
+                  <Divider type="vertical" /> 
+                  <a style = {{"opacity":0.2,"pointerEvents":'none'}} > 激活 </a>
+                  <Divider type="vertical" /> 
+                  <a
+                    onClick={e => {
+                      e.preventDefault();
+                      this.handleSingle(item, record.appName, 'unstall');
+                    }
+                  }
+                  >
+                    卸载
+                  </a>
+              </div>
             ) : (
               ''
             )}
-            <Divider type="vertical" />
+            {item.statue === 'RESOLVED' ? (
+              <div>
+                  解析中...
+              </div>
+            ) : (
+              ''
+            )}
           </span>
         ),
       },
@@ -130,10 +156,10 @@ class Apppluginmng extends PureComponent {
 
     return (
       <Table
-        size="small"
-        rowSelection={rowSelection}
-        bordered
-        // footer={footer}
+        size="middle"
+        // rowSelection={rowSelection} 关闭分组推送
+        // bordered
+        //// footer={footer}
         columns={columns}
         dataSource={record.ipUnitList}
         rowKey={item => item.ip}
@@ -147,6 +173,8 @@ class Apppluginmng extends PureComponent {
     const { dispatch, location } = this.props;
     const queryParams = location.query;
     const { pluginName: pluginNames } = queryParams;
+    console.log("pluginName",pluginNames)
+    console.log("version",item)
     dispatch({
       type: 'arkapp/fetchArkApps',
       payload: {
@@ -170,10 +198,10 @@ class Apppluginmng extends PureComponent {
       },
     });
 
-    // 延迟1.5s 后重新获取状态
-    setTimeout(() => {
+    // 1s 刷新一次状态
+    window.setInte=setInterval(() => {
       this.getData();
-    }, 1500);
+    }, 1000);
   };
 
   // 处理分组推送的方法
@@ -198,10 +226,10 @@ class Apppluginmng extends PureComponent {
         },
       });
 
-      // 延迟1.5s 后重新获取状态
-      setTimeout(() => {
+      // 1s 刷新一次状态
+      window.setInte=setInterval(() => {
         this.getData();
-      }, 1500);
+      }, 1000);
     }
   };
 
@@ -221,10 +249,10 @@ class Apppluginmng extends PureComponent {
         targetHosts: [item.ip],
       },
     });
-    // 延迟1.5s 后重新获取状态
-    setTimeout(() => {
+    // 1s 刷新一次状态
+    window.setInte=setInterval(() => {
       this.getData();
-    }, 1500);
+    }, 1000);
   };
 
   // 搜索框组件
