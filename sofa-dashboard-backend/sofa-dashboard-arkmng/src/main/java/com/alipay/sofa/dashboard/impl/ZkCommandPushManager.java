@@ -210,13 +210,9 @@ public class ZkCommandPushManager implements CommandPushManager {
         }
         if (arkPluginList.size() == 1) {
             ArkPluginDO arkPlugin = arkPluginList.get(0);
-            String pluginUrl = arkPlugin.getPluginUrl();
             ArkModuleVersionDO arkModuleVersion = arkDao.queryByModuleIdAndModuleVersion(
                 arkPlugin.getId(), commandRequest.getPluginVersion());
-            if (pluginUrl.endsWith(SofaDashboardConstants.SEPARATOR)) {
-                pluginUrl = pluginUrl.substring(0, pluginUrl.length() - 1);
-            }
-            return pluginUrl + arkModuleVersion.getSourcePath();
+            return arkModuleVersion.getSourcePath();
         }
         return null;
     }

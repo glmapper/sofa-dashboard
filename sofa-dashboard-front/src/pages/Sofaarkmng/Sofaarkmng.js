@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
-import { Row, Col, Card, Form, Input, Button, Modal, Divider, Table, message, Tag } from 'antd';
+import { Row, Col, Card, Form, Input, Button, Modal, Divider, Table, message, Tag ,Popover} from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import styles from './Sofaarkmng.less';
 import Result from '@/components/Result';
@@ -30,18 +30,6 @@ const CreateForm = Form.create()(props => {
           rules: [{ required: true, message: '请输入插件名称！', min: 1 }],
         })(<Input placeholder="testPluginName" />)}
       </FormItem>
-
-      <FormItem labelCol={{ span: 5 }} wrapperCol={{ span: 15 }} label="版本">
-        {form.getFieldDecorator('version', {
-          rules: [{ required: true, message: '请输入版本信息！', min: 1 }],
-        })(<Input placeholder="v1" />)}
-      </FormItem>
-
-      <FormItem labelCol={{ span: 5 }} wrapperCol={{ span: 15 }} label="Url">
-        {form.getFieldDecorator('address', {
-          rules: [{ required: true, message: '请输入插件地址！', min: 1 }],
-        })(<Input placeholder="http://127.0.0.1/ns/modules/testPluginName" />)}
-      </FormItem>
       <FormItem labelCol={{ span: 5 }} wrapperCol={{ span: 15 }} label="描述">
         {form.getFieldDecorator('description', {
           rules: [{ required: true, message: '请输入描述信息！', min: 1 }],
@@ -59,18 +47,12 @@ const CreateForm = Form.create()(props => {
 class Sofaarkmng extends PureComponent {
   state = {
     modalVisible: false,
-    // modalVersionVisible: false,
-    // expandForm: false,
     visible: false,
     done: false,
     appVisible: false,
     appDone: false,
-    // selectedRows: [],
-    // formValues: {},
-    // stepFormValues: {},
     pluginName: '',
   };
-
   componentDidMount() {
     const { dispatch } = this.props;
     dispatch({
@@ -108,8 +90,6 @@ class Sofaarkmng extends PureComponent {
       type: 'arkmng/registerPlugins',
       payload: {
         pluginName: fields.pluginName,
-        version: fields.version,
-        address: fields.address,
         description: fields.description,
       },
     });
@@ -139,6 +119,7 @@ class Sofaarkmng extends PureComponent {
         payload: {
           pluginName: pluginNames,
           version: fieldsValue.version,
+          address: fieldsValue.address
         },
       }).then(() => {
         this.setState({
@@ -154,12 +135,13 @@ class Sofaarkmng extends PureComponent {
     const { current } = this.state;
     const pluginNames = current ? current.pluginName : '';
     form.validateFields((err, fieldsValue) => {
+      console.log(err)
       if (err) return;
       dispatch({
         type: 'arkmng/relatedApp',
         payload: {
           pluginName: pluginNames,
-          appName: fieldsValue.version,
+          appName: fieldsValue.appName,
         },
       }).then(() => {
         this.setState({
@@ -192,6 +174,7 @@ class Sofaarkmng extends PureComponent {
   handleCancel = () => {
     this.setState({
       visible: false,
+      showAppVersionModal: false
     });
   };
 
@@ -206,6 +189,7 @@ class Sofaarkmng extends PureComponent {
   handleAppCancel = () => {
     this.setState({
       appVisible: false,
+      showAppArkModal: false
     });
   };
 
@@ -236,7 +220,6 @@ class Sofaarkmng extends PureComponent {
                 placeholder="请输入"
                 onChange={e => this.setState({ pluginName: e.target.value })}
               />
-              {/* {getFieldDecorator('pluginName')(<Input placeholder="请输入" />)} */}
             </FormItem>
           </Col>
           <Col md={8} sm={24}>
@@ -289,17 +272,14 @@ class Sofaarkmng extends PureComponent {
         render: versions => (
           <span>
             {versions.map(tag => (
-              <Tag color="blue" key={tag}>
-                {tag}
-              </Tag>
+               <Popover content={tag.sourcePath} title={tag.version} key={tag.version}>
+                <Tag color="blue" key={tag.version}>
+                  {tag.version}
+                </Tag>
+              </Popover>
             ))}
           </span>
         ),
-      },
-      {
-        title: 'url',
-        key: 'address',
-        dataIndex: 'address',
       },
       {
         title: '操作',
@@ -373,7 +353,7 @@ class Sofaarkmng extends PureComponent {
       return (
         <Form onSubmit={this.handleAppSubmit}>
           <FormItem label="关联应用">
-            {getFieldDecorator('version', {
+            {getFieldDecorator('appName', {
               rules: [{ required: true, message: '应用名' }],
             })(<Input placeholder="应用名" />)}
           </FormItem>
@@ -399,10 +379,16 @@ class Sofaarkmng extends PureComponent {
       }
       return (
         <Form onSubmit={this.handleSubmit}>
-          <FormItem label="新增版本">
+          <FormItem label="新增版本" >
             {getFieldDecorator('version', {
               rules: [{ required: true, message: '请输入版本' }],
             })(<Input placeholder="请输入版本" />)}
+          </FormItem>
+
+          <FormItem label="文件地址" >
+            {getFieldDecorator('address', {
+              rules: [{ required: true, message: '请输入文件地址' }],
+            })(<Input placeholder="请输入文件地址" />)}
           </FormItem>
         </Form>
       );
@@ -456,13 +442,21 @@ class Sofaarkmng extends PureComponent {
         </Card>
         <CreateForm {...parentMethods} modalVisible={modalVisible} />
         {/* 添加版本的弹框组件 */}
-        <Modal destroyOnClose visible={visible} width={320} {...modalFooter}>
-          {getModalContent()}
-        </Modal>
+        {
+          this.state.visible && (
+            <Modal destroyOnClose visible={visible} width={320} {...modalFooter}>
+              {getModalContent()}
+            </Modal>
+          )
+        }
         {/* 关联应用的弹框组件 */}
-        <Modal destroyOnClose visible={appVisible} width={320} {...modalAppFooter}>
-          {getAppArkModalContent()}
-        </Modal>
+        {
+          this.state.appVisible && (
+            <Modal destroyOnClose visible={appVisible} width={320} {...modalAppFooter}>
+                { getAppArkModalContent()}
+            </Modal>
+          )
+        }
       </PageHeaderWrapper>
     );
   }

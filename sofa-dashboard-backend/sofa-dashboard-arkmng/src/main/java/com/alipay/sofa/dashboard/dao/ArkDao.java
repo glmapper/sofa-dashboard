@@ -99,7 +99,7 @@ public interface ArkDao {
      * @param id
      * @return
      */
-    List<String> queryVersionsByMid(int id);
+    List<ArkModuleVersionDO> queryVersionsByMid(int id);
 
     /**
      * 插件关联应用信息入库
