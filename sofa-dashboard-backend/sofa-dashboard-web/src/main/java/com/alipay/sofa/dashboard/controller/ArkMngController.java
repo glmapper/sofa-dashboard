@@ -16,9 +16,9 @@
  */
 package com.alipay.sofa.dashboard.controller;
 
-import com.alipay.sofa.dashboard.application.ZookeeperApplicationManager;
+import com.alipay.sofa.dashboard.app.ZookeeperApplicationManager;
 import com.alipay.sofa.dashboard.constants.SofaDashboardConstants;
-import com.alipay.sofa.dashboard.impl.ZkHelper;
+import com.alipay.sofa.dashboard.app.helper.ZkHelper;
 import com.alipay.sofa.dashboard.model.AppArkModel;
 import com.alipay.sofa.dashboard.model.ArkPluginDO;
 import com.alipay.sofa.dashboard.model.ArkPluginModel;

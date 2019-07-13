@@ -19,19 +19,20 @@ package com.alipay.sofa.dashboard.model;
 import java.util.Objects;
 
 /**
- * 客户端注册上来的应用模型
- *
- * @author: guolei.sgl (guolei.sgl@antfin.com) 19/1/19 上午11:48
+ * 应用实例模型
+ * @author: guolei.sgl (guolei.sgl@antfin.com) 18/12/6 下午4:02
  * @since:
  **/
-public class Application {
+public class AppInfo {
 
     private String appName;
     private String hostName;
     private int    port;
     private String appState;
-
-    // 其他属性待定
+    /**
+     * 应用启动时间(如果应用是重启的，则表示最近一次启动时间)
+     */
+    private String startTime;
 
     public String getAppName() {
         return appName;
@@ -65,6 +66,17 @@ public class Application {
         this.appState = appState;
     }
 
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
+
+    public AppInfo() {
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -73,14 +85,15 @@ public class Application {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Application that = (Application) o;
+        AppInfo that = (AppInfo) o;
         return port == that.port && Objects.equals(appName, that.appName)
                && Objects.equals(hostName, that.hostName)
-               && Objects.equals(appState, that.appState);
+               && Objects.equals(appState, that.appState)
+               && Objects.equals(startTime, that.startTime);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(appName, hostName, port, appState);
+        return Objects.hash(appName, hostName, port, appState,startTime);
     }
 }

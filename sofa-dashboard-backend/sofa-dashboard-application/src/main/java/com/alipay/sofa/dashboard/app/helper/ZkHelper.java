@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alipay.sofa.dashboard.impl;
+package com.alipay.sofa.dashboard.app.helper;
 
-import com.alipay.sofa.dashboard.application.ZookeeperApplicationManager;
+import com.alipay.sofa.dashboard.app.ZookeeperApplicationManager;
 import com.alipay.sofa.dashboard.constants.SofaDashboardConstants;
-import com.alipay.sofa.dashboard.model.Application;
+import com.alipay.sofa.dashboard.model.AppInfo;
 import com.alipay.sofa.dashboard.zookeeper.ZkCommandClient;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
@@ -50,19 +50,19 @@ public class ZkHelper {
      * @return
      * @throws Exception
      */
-    public List<Application> getArkAppFromZookeeper(String appName, String pluginName, String version) throws Exception {
-        List<Application> applications = new ArrayList<>();
+    public List<AppInfo> getArkAppFromZookeeper(String appName, String pluginName, String version) throws Exception {
+        List<AppInfo> applications = new ArrayList<>();
         CuratorFramework curatorClient = zkCommandClient.getCuratorClient();
         // 根据应用名获取所有实例信息
         List<String> apps = curatorClient.getChildren().forPath(SofaDashboardConstants.SOFA_ARK_ROOT + SofaDashboardConstants.SEPARATOR + appName);
         // 遍历实例IP，生成应用元数据
         apps.forEach((ip) -> {
             try {
-                Application application = new Application();
+                AppInfo application = new AppInfo();
                 application.setAppName(appName);
                 application.setHostName(ip);
-                // 这里通过 actuator 方式获取状态
-                application.setAppState(getAppState(appName, ip, pluginName, version));
+                // todo in optimized-to-ark-console
+                application.setAppState("");
                 applications.add(application);
             } catch (Exception e) {
                 LOGGER.error("Failed to get ark app.", e);
@@ -83,16 +83,4 @@ public class ZkHelper {
         return ips != null ? ips.size() : 0;
     }
 
-    /**
-     * 获取应用插件状态
-     *
-     * @param appName
-     * @param ip
-     * @param pluginName
-     * @param version
-     * @return
-     */
-    private String getAppState(String appName, String ip, String pluginName, String version) {
-        return zookeeperApplicationManager.getAppState(appName, ip, pluginName, version);
-    }
 }
