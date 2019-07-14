@@ -94,6 +94,6 @@ public class AppInfo {
 
     @Override
     public int hashCode() {
-        return Objects.hash(appName, hostName, port, appState,startTime);
+        return Objects.hash(appName, hostName, port, appState, startTime);
     }
 }
